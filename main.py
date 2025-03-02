@@ -11,9 +11,9 @@ def main():
     if launch_settings["mode"] == "join":
         client.main(launch_settings["username"], launch_settings["ip"], launch_settings["port"])
     elif launch_settings["mode"] == "host":
-        server.host(launch_settings["port"])
+        server.main(int(launch_settings["port"]))
     elif launch_settings["mode"] == "all":
-        server.host(launch_settings["port"])
+        server.main(int(launch_settings["port"]))
         client.main(launch_settings["username"], launch_settings["ip"], launch_settings["port"])
     else:
         exit("Invalid data provided:\n" + str(launch_settings))
