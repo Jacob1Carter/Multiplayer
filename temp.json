@@ -1,0 +1,6 @@
+{
+    "username": "username",
+    "mode": "mode.lower()",
+    "ip": "ip",
+    "port": "port"
+}

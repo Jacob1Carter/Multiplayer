@@ -1,125 +1,124 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
-def get_settings(username_var, mode_var, ip_var, port_var, port_host_var, host_join_var):
-    """Gets user settings and returns them as a dictionary. Shows errors without closing the window."""
-    username = username_var.get().strip()
-    mode = mode_var.get()
-    ip = ip_var.get().strip() if mode == "Join" else "NULL"
-    port = port_var.get().strip() if mode == "Join" else port_host_var.get().strip()
-
-    # Validate input
-    if mode != "Host" or host_join_var.get():
-        if not username:
-            messagebox.showerror("Error", "Username is required!")
-            return None
-    
-    if mode == "Join" and (not ip or not port):
-        messagebox.showerror("Error", "IP and Port are required to Join!")
-        return None
-    
-    if mode == "Host" and not port:
-        messagebox.showerror("Error", "Port is required to Host!")
-        return None
-
-    if mode == "Host" and host_join_var.get():
-        mode = "all"  # Host & Join mode
-
-    # Store settings in a dictionary
-    settings = {
-        "username": username,
-        "mode": mode.lower(),
-        "ip": ip,
-        "port": port
-    }
-
-    return settings
-
-def update_ui(mode_var, join_frame, host_frame, port_var, port_host_var, username_entry, host_join_var):
-    """Updates the UI based on the selected mode (Join or Host)."""
-    if mode_var.get() == "Join":
-        join_frame.pack(pady=10)
-        host_frame.pack_forget()
-        port_var.set(port_host_var.get())  # Sync port field
-        username_entry.pack()  # Show username entry
-    else:
-        host_frame.pack(pady=10)
-        join_frame.pack_forget()
-        port_host_var.set(port_var.get())  # Sync port field
-        if host_join_var.get():
-            username_entry.pack()  # Show username entry if "Also Join" is checked
-        else:
-            username_entry.pack_forget()  # Hide username entry if only hosting
+def show_page(notebook, page_index):
+    notebook.select(page_index)
 
 def main():
-    """Initializes and runs the Tkinter launcher and returns user settings."""
     root = tk.Tk()
-    root.title("Game Launcher")
-    root.geometry("350x300")
+    root.title("Launcher")
+    root.geometry("300x500")
 
-    # Variables
-    username_var = tk.StringVar()
-    mode_var = tk.StringVar(value="Join")
-    ip_var = tk.StringVar()
-    port_var = tk.StringVar()
-    port_host_var = tk.StringVar()
-    host_join_var = tk.IntVar()
+    main.data = {
+            "mode": None,
+            "username": None,
+            "ip": None,
+            "port": None
+        }
 
-    # Username
-    tk.Label(root, text="Username:").pack(pady=5)
-    username_entry = tk.Entry(root, textvariable=username_var)
-    username_entry.pack()
+    notebook = ttk.Notebook(root)
+    notebook.pack(expand=True, fill='both')
 
-    # Join or Host selection
-    tk.Label(root, text="Choose Mode:").pack(pady=5)
-    mode_frame = tk.Frame(root)
-    mode_frame.pack()
+    # Page for Option 1
+    join_page = ttk.Frame(notebook)
+    notebook.add(join_page, text="Join")
 
-    join_radio = ttk.Radiobutton(mode_frame, text="Join", variable=mode_var, value="Join")
-    join_radio.grid(row=0, column=0, padx=10)
+    j_title = ttk.Label(join_page, text="Multiplayer Launcher")
+    j_title.pack(pady=10)
 
-    host_radio = ttk.Radiobutton(mode_frame, text="Host", variable=mode_var, value="Host")
-    host_radio.grid(row=0, column=1, padx=10)
+    j_page_title = ttk.Label(join_page, text="Join")
+    j_page_title.pack(pady=10)
 
-    # Join options (IP & Port)
-    join_frame = tk.Frame(root)
-    tk.Label(join_frame, text="IP Address:").pack()
-    ip_entry = tk.Entry(join_frame, textvariable=ip_var)
-    ip_entry.pack()
+    j_username_label = ttk.Label(join_page, text="Username:")
+    j_username_label.pack(pady=10)
+    j_username_entry = ttk.Entry(join_page)
+    j_username_entry.pack(pady=10)
 
-    tk.Label(join_frame, text="Port:").pack()
-    port_entry = tk.Entry(join_frame, textvariable=port_var)
-    port_entry.pack()
+    j_ip_addr_label = ttk.Label(join_page, text="Ip address:")
+    j_ip_addr_label.pack(pady=10)
+    j_ip_entry = ttk.Entry(join_page)
+    j_ip_entry.pack(pady=10)
 
-    # Host options (Port & Host+Join checkbox)
-    host_frame = tk.Frame(root)
-    tk.Label(host_frame, text="Port:").pack()
-    port_host_entry = tk.Entry(host_frame, textvariable=port_host_var)
-    port_host_entry.pack()
+    j_port_label = ttk.Label(join_page, text="Port:")
+    j_port_label.pack(pady=10)
+    j_port_entry = ttk.Entry(join_page)
+    j_port_entry.pack(pady=10)
 
-    host_join_check = tk.Checkbutton(host_frame, text="Also Join", variable=host_join_var, command=lambda: update_ui(mode_var, join_frame, host_frame, port_var, port_host_var, username_entry, host_join_var))
-    host_join_check.pack()
+    def send_join_data():
+        main.data = {
+            "mode": "join",
+            "username": j_username_entry.get(),
+            "ip": j_ip_entry.get(),
+            "port": j_port_entry.get()
+        }
+        root.destroy()  # Close the window
 
-    # Bind mode change to update UI
-    mode_var.trace_add("write", lambda *args: update_ui(mode_var, join_frame, host_frame, port_var, port_host_var, username_entry, host_join_var))
+    j_join_button = ttk.Button(join_page, text="Join", command=send_join_data)
+    j_join_button.pack(pady=10)
 
-    # Start button
-    def on_start():
-        settings = get_settings(username_var, mode_var, ip_var, port_var, port_host_var, host_join_var)
-        if settings:
-            root.quit()  # Only quit if settings are valid
+    # Page for Option 2
+    host_page = ttk.Frame(notebook)
+    notebook.add(host_page, text="Host")
 
-    start_button = tk.Button(root, text="Start Game", command=on_start)
-    start_button.pack(pady=20)
+    h_title = ttk.Label(host_page, text="Multiplayer Launcher")
+    h_title.pack(pady=10)
 
-    # Initialize UI
-    update_ui(mode_var, join_frame, host_frame, port_var, port_host_var, username_entry, host_join_var)
+    h_page_title = ttk.Label(host_page, text="Host")
+    h_page_title.pack(pady=10)
 
-    # Run Tkinter main loop
+    h_port_label = ttk.Label(host_page, text="Port:")
+    h_port_label.pack(pady=10)
+    h_port_entry = ttk.Entry(host_page)
+    h_port_entry.pack(pady=10)
+
+    def send_host_data():
+        main.data = {
+            "mode": "host",
+            "username": None,
+            "ip": None,
+            "port": h_port_entry.get()
+        }
+        root.destroy()  # Close the window
+
+    h_host_button = ttk.Button(host_page, text="Host", command=send_host_data)
+    h_host_button.pack(pady=10)
+
+    # Page for Option 3
+    host_join_page = ttk.Frame(notebook)
+    notebook.add(host_join_page, text="Host & Join")
+
+    h_j_title = ttk.Label(host_join_page, text="Multiplayer Launcher")
+    h_j_title.pack(pady=10)
+
+    h_j_page_title = ttk.Label(host_join_page, text="Host & Join")
+    h_j_page_title.pack(pady=10)
+
+    h_j_username_label = ttk.Label(host_join_page, text="Username:")
+    h_j_username_label.pack(pady=10)
+    h_j_username_entry = ttk.Entry(host_join_page)
+    h_j_username_entry.pack(pady=10)
+
+    h_j_port_label = ttk.Label(host_join_page, text="Port:")
+    h_j_port_label.pack(pady=10)
+    h_j_port_entry = ttk.Entry(host_join_page)
+    h_j_port_entry.pack(pady=10)
+
+    def send_host_join_data():
+        main.data = {
+            "mode": "host_join",
+            "username": h_j_username_entry.get(),
+            "ip": None,
+            "port": h_j_port_entry.get()
+        }
+        root.destroy()  # Close the window
+
+    h_j_host_join_button = ttk.Button(host_join_page, text="Join", command=send_host_join_data)
+    h_j_host_join_button.pack(pady=10)
+
     root.mainloop()
 
-    return get_settings(username_var, mode_var, ip_var, port_var, port_host_var, host_join_var)
+    return main.data
 
 if __name__ == "__main__":
     settings = main()
-    print(settings)  # Print settings for debugging
+    print(settings)
